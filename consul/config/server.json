@@ -1,0 +1,67 @@
+{
+    "node_name": "consul-server",
+    "datacenter": "dc1",
+    "data_dir": "/consul/data",
+    "log_level": "INFO",
+    "enable_script_checks": true,
+    "server": true,
+    "ui_config": {
+    "enabled": true
+    },
+    "services": [
+    {
+        "name": "dnsmasq1",
+        "port": 53,
+        "checks": [
+        {
+            "id": "dns-1-health",
+            "name": "DNS Server 1 Health Check",
+            "tcp": "dnsmasq1:53",
+            "interval": "10s",
+            "timeout": "1s"
+        }
+        ]
+    },
+    {
+        "name": "dnsmasq2",
+        "port": 53,
+        "checks": [
+        {
+            "id": "dns-2-health",
+            "name": "DNS Server 2 Health Check",
+            "tcp": "dnsmasq2:53",
+            "interval": "10s",
+            "timeout": "1s"
+        }
+        ]
+    },
+    {
+        "name": "webapp1",
+        "port": 80,
+        "checks": [
+        {
+            "id": "webapp1-health",
+            "name": "Apache Server 1 Health Check",
+            "http": "http://webapp1:80/",
+            "method": "GET",
+            "interval": "10s",
+            "timeout": "1s"
+        }
+        ]
+    },
+    {
+        "name": "webapp2",
+        "port": 80,
+        "checks": [
+        {
+            "id": "webapp2-health",
+            "name": "Apache Server 2 Health Check",
+            "http": "http://webapp2:80/",
+            "method": "GET",
+            "interval": "10s",
+            "timeout": "1s"
+        }
+        ]
+    }
+    ]
+}

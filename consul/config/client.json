@@ -1,0 +1,20 @@
+{
+    "node_name": "consul-client",
+    "datacenter": "dc1",
+    "data_dir": "/consul/data",
+    "log_level": "INFO",
+    "enable_script_checks": true,
+    "retry_join": ["consul-server"],
+    "service": {
+    "id": "consul-client",
+    "name": "consul-client",
+    "port": 8500,
+    "check": {
+        "id": "consul-client-health",
+        "name": "Consul Client CDN TCP Health Check",
+        "tcp": "localhost:8500",
+        "interval": "10s",
+        "timeout": "1s"
+    }
+    }
+}

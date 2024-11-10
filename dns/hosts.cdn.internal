@@ -1,0 +1,4 @@
+192.168.12.2 webapp.cdn.internal
+192.168.12.3 webapp.cdn.internal
+192.168.10.2 anycast.cdn.internal
+192.168.10.3 anycast.cdn.internal

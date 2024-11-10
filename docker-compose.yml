@@ -1,0 +1,138 @@
+services:
+  # FRR Router 1 - Anycast BGP
+  router1:
+    image: frrouting/frr:latest
+    container_name: router1
+    hostname: router1
+    privileged: true
+    volumes:
+      - ./frr/router1/daemons:/etc/frr/daemons
+      - ./frr/router1/frr.conf:/etc/frr/frr.conf
+    networks:
+      bgp_network:
+        ipv4_address: 203.0.113.2
+      internal_network:
+        ipv4_address: 192.168.9.2
+
+  # FRR Router 2 - Anycast BGP
+  router2:
+    image: frrouting/frr:latest
+    container_name: router2
+    hostname: router2
+    privileged: true
+    volumes:
+      - ./frr/router2/daemons:/etc/frr/daemons
+      - ./frr/router2/frr.conf:/etc/frr/frr.conf
+    networks:
+      bgp_network:
+        ipv4_address: 203.0.113.3
+      internal_network:
+        ipv4_address: 192.168.9.3
+
+  # DNSMasq Server 1
+  dnsmasq1:
+    image: jpillora/dnsmasq
+    container_name: dnsmasq1
+    ports:
+      - "53:53/udp"
+    volumes:
+      - ./dns/dnsmasq.conf:/etc/dnsmasq.conf
+      - ./dns/hosts.cdn.internal:/etc/hosts.cdn.internal
+    networks:
+      internal_network:
+        ipv4_address: 192.168.10.2
+    cap_add:
+      - NET_ADMIN
+
+  # DNSMasq Server 2
+  dnsmasq2:
+    image: jpillora/dnsmasq
+    container_name: dnsmasq2
+    ports:
+      - "54:53/udp"
+    volumes:
+      - ./dns/dnsmasq.conf:/etc/dnsmasq.conf
+      - ./dns/hosts.cdn.internal:/etc/hosts.cdn.internal
+    networks:
+      internal_network:
+        ipv4_address: 192.168.10.3
+    cap_add:
+      - NET_ADMIN
+
+  # Consul Server
+  consul-server:
+    image: consul:1.15
+    container_name: consul-server
+    command: agent -server -bootstrap-expect=1 -ui -client=0.0.0.0
+    volumes:
+      - ./consul/config/server.json:/consul/config/server.json:ro
+    ports:
+      - "8500:8500"  # UI/API
+      - "8600:8600/tcp"  # DNS
+      - "8600:8600/udp"  # DNS
+    networks:
+      internal_network:
+        ipv4_address: 192.168.11.2
+  # Consul Client 1
+  consul-client1:
+    image: consul:1.15
+    container_name: consul-client-1
+    command: agent -client=0.0.0.0
+    volumes:
+      - ./consul/config/client.json:/consul/config/client.json:ro
+    depends_on:
+      - consul-server
+    networks:
+      internal_network:
+        ipv4_address: 192.168.11.3
+
+  # Consul Client 2
+  consul-client2:
+    image: consul:1.15
+    container_name: consul-client-2
+    command: agent -client=0.0.0.0
+    volumes:
+      - ./consul/config/client.json:/consul/config/client.json:ro
+    depends_on:
+      - consul-server
+    networks:
+      internal_network:
+        ipv4_address: 192.168.11.4 
+
+  # Apache Web Server 1
+  webapp1:
+    image: httpd:alpine
+    container_name: webapp1
+    ports:
+      - "8081:80"
+    volumes:
+      #- ./apache/webapp1/httpd.conf:/usr/local/apache2/conf/httpd.conf:ro
+      - ./apache/webapp1:/usr/local/apache2/htdocs/
+    networks:
+      internal_network:
+        ipv4_address: 192.168.12.2
+
+  # Apache Web Server 2
+  webapp2:
+    image: httpd:alpine
+    container_name: webapp2
+    ports:
+      - "8082:80"
+    volumes:
+      #- ./apache/webapp2/httpd.conf:/usr/local/apache2/conf/httpd.conf:ro
+      - ./apache/webapp2:/usr/local/apache2/htdocs/
+    networks:
+      internal_network:
+        ipv4_address: 192.168.12.3
+
+networks:
+  bgp_network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 203.0.113.0/24
+  internal_network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 192.168.8.0/21
