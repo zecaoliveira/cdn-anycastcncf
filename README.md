@@ -11,6 +11,7 @@ Apontamentos DNS para todas as aplicações que possam ser acessadas via browser
 
 Usar a rede: 192.168.8.0/21 como bridge.
 
+```
 network-infra/
 ├── docker-compose.yml
 ├── consul/
@@ -31,3 +32,4 @@ network-infra/
 │       └── dnsmasq.conf
 └── apache/
     └── httpd.conf
+```
